@@ -1,0 +1,281 @@
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  .hc-widget {
+    font-family: var(--config--main-font-family, 'Inter', 'Helvetica Neue', sans-serif);
+    background: var(--config--main-color-background, #ffffff);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .hc-header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .hc-month-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--config--main-color-text, #1f2937);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .hc-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 16px;
+  }
+
+  .hc-day-header {
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--config--main-color-text, #6b7280);
+    padding: 6px 0 4px;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+  }
+
+  .hc-day-header.hc-sun { color: #ef4444; opacity: 1; }
+  .hc-day-header.hc-sat { color: #3b82f6; opacity: 1; }
+
+  .hc-day-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 2px 5px;
+    border-radius: 8px;
+    min-height: 44px;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .hc-day-cell.hc-has-holiday {
+    cursor: pointer;
+  }
+
+  .hc-day-cell.hc-has-holiday:hover {
+    background: var(--config--main-color-background-secondary, #f0f7ff);
+    transform: scale(1.05);
+  }
+
+  .hc-day-cell.hc-today {
+    background: var(--config--main-color-background-secondary, #eff6ff);
+  }
+
+  .hc-day-cell.hc-active {
+    background: var(--config--main-color-brand, #2563eb) !important;
+    transform: scale(1.05);
+  }
+
+  .hc-day-number {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--config--main-color-text, #374151);
+    line-height: 1;
+  }
+
+  .hc-day-cell.hc-sun .hc-day-number { color: #ef4444; }
+  .hc-day-cell.hc-sat .hc-day-number { color: #3b82f6; }
+  .hc-day-cell.hc-active .hc-day-number { color: #ffffff !important; }
+
+  .hc-today-ring {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--config--main-color-brand, #2563eb);
+    opacity: 0.7;
+  }
+
+  .hc-day-cell.hc-active .hc-today-ring {
+    background: rgba(255,255,255,0.7);
+  }
+
+  .hc-dots {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+    align-items: center;
+    justify-content: center;
+    height: 6px;
+  }
+
+  .hc-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--config--main-color-brand, #2563eb);
+    flex-shrink: 0;
+  }
+
+  .hc-dot-more {
+    font-size: 0.5rem;
+    color: var(--config--main-color-brand, #2563eb);
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .hc-day-cell.hc-active .hc-dot {
+    background: rgba(255,255,255,0.85);
+  }
+
+  .hc-day-cell.hc-active .hc-dot-more {
+    color: rgba(255,255,255,0.85);
+  }
+
+  .hc-hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--config--main-color-text, #9ca3af);
+    opacity: 0.6;
+    margin: 0 0 4px;
+    padding: 4px 0;
+  }
+
+  .hc-panel {
+    display: none;
+    background: var(--config--main-color-background, #f9fafb);
+    border: 1px solid var(--config--main-color-border, #e5e7eb);
+    border-radius: 10px;
+    padding: 14px 14px 10px;
+    animation: hc-slide-in 0.2s ease;
+    margin-top: 4px;
+  }
+
+  .hc-panel.hc-visible {
+    display: block;
+  }
+
+  @keyframes hc-slide-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hc-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .hc-panel-date {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--config--main-color-brand, #2563eb);
+  }
+
+  .hc-panel-count {
+    font-size: 0.72rem;
+    color: var(--config--main-color-text, #6b7280);
+    opacity: 0.7;
+    background: var(--config--main-color-background-secondary, #e5e7eb);
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .hc-holiday-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .hc-holiday-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  .hc-holiday-list::-webkit-scrollbar-thumb {
+    background: var(--config--main-color-border, #d1d5db);
+    border-radius: 2px;
+  }
+
+  .hc-holiday-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--config--main-color-background, #ffffff);
+    border-radius: 7px;
+    border: 1px solid var(--config--main-color-border, #e5e7eb);
+    transition: border-color 0.15s;
+  }
+
+  .hc-holiday-item:hover {
+    border-color: var(--config--main-color-brand, #93c5fd);
+  }
+
+  .hc-flag {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+  }
+
+  .hc-holiday-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .hc-holiday-name {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--config--main-color-text, #111827);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hc-holiday-country {
+    font-size: 0.72rem;
+    color: var(--config--main-color-text, #6b7280);
+    opacity: 0.75;
+  }
+</style>
+
+<div class="hc-widget">
+  <div class="hc-header">
+    <h2 class="hc-month-title">🌍 2026年5月 世界の祝日カレンダー</h2>
+  </div>
+
+  <div class="hc-calendar-grid" id="hc-grid"></div>
+
+  <p class="hc-hint" id="hc-hint">🗓 祝日のある日付（●）をクリックしてください</p>
+
+  <div class="hc-panel" id="hc-panel">
+    <div class="hc-panel-header">
+      <span class="hc-panel-date" id="hc-panel-date"></span>
+      <span class="hc-panel-count" id="hc-panel-count"></span>
+    </div>
+    <div class="hc-holiday-list" id="hc-panel-list"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+
+<script type="module">
+  // Gainsight CC 外（スタンドアローンプレビュー）でも動くスタブ
+  if (typeof __WIDGET_SDK__ === 'undefined') {
+    import('./app.js').then(({ init }) => {
+      init({
+        whenReady: () => Promise.resolve(),
+        $: (sel) => document.querySelector(sel),
+        getProps: () => ({}),
+        on: () => {},
+      });
+    });
+  }
+</script>
